@@ -1,0 +1,44 @@
+name = "add"
+description = "Add add tests"
+
+[[tests]]
+name = "add positive, one operand"
+program = [
+	"mov r1, 10",
+	"add r2, r1",
+	"wfi"
+]
+[tests.expect.registers]
+r2 = 10
+
+[[tests]]
+name = "add positive, two operand"
+program = [
+	"mov r1, 10",
+	"mov r2, 30",
+	"add r3, r1, r2",
+	"wfi"
+]
+[tests.expect.registers]
+r3 = 40
+
+[[tests]]
+name = "add negative, one operand"
+program = [
+	"mov r1, -10",
+	"add r2, r1",
+	"wfi"
+]
+[tests.expect.registers]
+r2 = -10
+
+[[tests]]
+name = "add negative, two operand"
+program = [
+	"mov r1, 10",
+	"mov r2, -30",
+	"add r3, r1, r2",
+	"wfi"
+]
+[tests.expect.registers]
+r3 = -20

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from .runner import run_test
 
+
 def main() -> int:
     tests_dir = Path("tests")
 
@@ -17,21 +18,22 @@ def main() -> int:
 
     for test in tests:
         try:
-            if run_test(test):
-                passed += 1
-            else:
-                failed += 1
+            test_passed, test_failed = run_test(test)
+
+            passed += test_passed
+            failed += test_failed
 
         except Exception as e:
-            print(f"  ERROR: {e}")
+            print(f"ERROR[{test}]: {e}")
             failed += 1
 
-        print()
-        print(f"Tests: {passed + failed}")
-        print(f"Passed: {passed}")
-        print(f"Failed: {failed}")
+    print()
+    print(f"Tests: {passed + failed}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
 
-        return 0 if failed == 0 else 1
+    return 0 if failed == 0 else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -1,0 +1,62 @@
+name = "addi"
+description = "All addi tests"
+
+
+# Basic positive immediate
+[[tests]]
+name = "positive immediate"
+program = [
+	"addi r1, r0, 30",
+	"wfi"
+]
+[tests.expect.registers]
+r1 = 30
+
+# Basic negative immediate
+[[tests]]
+name = "negative immediate"
+program = [
+	"addi r1, r0, -30",
+	"wfi"
+]
+[tests.expect.registers]
+r1 = -30
+
+# Minimum signed 12-bit immediate
+[[tests]]
+name = "minimum immediate"
+program = [
+	"addi r1, r0, -2048",
+	"wfi"
+]
+[tests.expect.registers]
+r1 = -2048
+
+# Maximum signed 12-bit immediate
+[[tests]]
+name = "maximum immediate"
+program = [
+	"addi r1, r0, 2047",
+	"wfi"
+]
+[tests.expect.registers]
+r1 = 2047
+
+# Values around zero
+[[tests]]
+name = "negative one"
+program = [
+	"addi r1, r0, -1",
+	"wfi"
+]
+[tests.expect.registers]
+r1 = -1
+
+[[tests]]
+name = "positive one"
+program = [
+	"addi r1, r0, 1",
+	"wfi"
+]
+[tests.expect.registers]
+r1 = 1
