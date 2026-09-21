@@ -3,7 +3,6 @@ from pathlib import Path
 
 from .runner import run_test
 
-
 def main() -> int:
     tests_dir = Path("tests")
 

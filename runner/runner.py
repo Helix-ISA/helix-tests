@@ -1,13 +1,13 @@
 import subprocess
 import tempfile
+import tomllib
 from pathlib import Path
 
-from .parser import load_state, load_tests
+from .parser import load_state
 
 
 def run_test(path: Path) -> tuple[int, int]:
     with path.open("rb") as f:
-        import tomllib
         data = tomllib.load(f)
 
     tests = data["tests"]
@@ -15,8 +15,10 @@ def run_test(path: Path) -> tuple[int, int]:
     description = data.get("description", "")
 
     print(f"[{test_name}]")
+
     if description:
         print(f"  {description}")
+
     print()
 
     passed = 0
@@ -28,23 +30,67 @@ def run_test(path: Path) -> tuple[int, int]:
         with tempfile.TemporaryDirectory(prefix="helix-test-") as tmp:
             tmp = Path(tmp)
 
-            asm_file = tmp / "program.hasm"
+            asm_file = tmp / "program.hxs"
             binary_file = tmp / "program"
             state_file = tmp / "state.json"
 
             asm_file.write_text(
-                "\n".join(test["program"]) + "\n"
+                "\n".join(test["program"]) + "\n",
+                encoding="utf-8",
             )
 
-            subprocess.run(
-                ["./hasm", str(asm_file), "-o", str(binary_file)],
-                check=True,
+            result = subprocess.run(
+                ["hasm", str(asm_file), "-o", str(binary_file)],
+                capture_output=True,
+                text=True,
             )
 
-            subprocess.run(
-                ["./hem", str(binary_file), "--dump-state", str(state_file)],
-                check=True,
+            if result.returncode != 0:
+                print("    FAIL: assembler error")
+
+                if result.stdout:
+                    print(f"    {result.stdout.rstrip()}")
+
+                if result.stderr:
+                    print(f"    {result.stderr.rstrip()}")
+
+                failed += 1
+                print()
+                continue
+
+            if not binary_file.exists():
+                print("    FAIL: assembler did not produce binary")
+                failed += 1
+                print()
+                continue
+
+            result = subprocess.run(
+                ["hem", str(binary_file), "--dump-state", str(state_file)],
+                capture_output=True,
+                text=True,
             )
+
+            if result.returncode != 0:
+                print(
+                    f"    FAIL: emulator exited with "
+                    f"status {result.returncode}"
+                )
+
+                if result.stdout:
+                    print(f"    {result.stdout.rstrip()}")
+
+                if result.stderr:
+                    print(f"    {result.stderr.rstrip()}")
+
+                failed += 1
+                print()
+                continue
+
+            if not state_file.exists():
+                print("    FAIL: emulator did not produce state")
+                failed += 1
+                print()
+                continue
 
             state = load_state(state_file)
             registers = test["expect"]["registers"]
